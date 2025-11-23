@@ -175,3 +175,11 @@ variable "notification_email" {
   type        = string
   default     = ""
 }
+
+# Optional suffix appended to secret names to avoid conflicts with secrets
+# that are scheduled for deletion (useful when you don't want to restore).
+variable "secret_suffix" {
+  description = "Optional suffix appended to Secrets Manager secret names"
+  type        = string
+  default     = ""
+}

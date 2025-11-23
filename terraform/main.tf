@@ -50,7 +50,7 @@ data "aws_availability_zones" "available" {
 
 # Secret for Alpha Vantage API Key
 resource "aws_secretsmanager_secret" "api_key" {
-  name        = "${local.name_prefix}/api-key"
+  name        = "${local.name_prefix}/api-key${var.secret_suffix != "" ? "-" : ""}${var.secret_suffix}"
   description = "Alpha Vantage API key for stock market data"
 
   tags = local.common_tags
@@ -63,7 +63,7 @@ resource "aws_secretsmanager_secret_version" "api_key" {
 
 # Secret for GitHub Token
 resource "aws_secretsmanager_secret" "github_token" {
-  name        = "${local.name_prefix}/github-token"
+  name        = "${local.name_prefix}/github-token${var.secret_suffix != "" ? "-" : ""}${var.secret_suffix}"
   description = "GitHub personal access token for CodePipeline"
 
   tags = local.common_tags
