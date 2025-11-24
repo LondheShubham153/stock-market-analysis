@@ -145,6 +145,10 @@ module "iam" {
   # Constructing the ARN here avoids a module ordering issue while allowing
   # the IAM role to receive the correct S3 permissions for CodePipeline.
   artifacts_bucket_arn   = "arn:aws:s3:::${local.name_prefix}-pipeline-artifacts"
+  
+  # Pass constructed CodeBuild project ARN so the CodePipeline role can
+  # call codebuild:StartBuild without creating a module dependency cycle.
+  codebuild_project_arn = "arn:aws:codebuild:${var.aws_region}:${data.aws_caller_identity.current.account_id}:project/${local.name_prefix}-build"
 
   tags = local.common_tags
 
