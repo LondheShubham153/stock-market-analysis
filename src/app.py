@@ -206,18 +206,32 @@ try:
     # Check if data is cached
     if cache_key not in st.session_state.cached_data:
         with st.spinner(f"Loading data for {selected_symbol}..."):
-            # Fetch data from API
-            response = api_service.fetch_intraday_data(selected_symbol, selected_interval)
-            df = api_service.parse_time_series(response)
+            # Fetch data from API (returns tuple: response, is_demo)
+            response, is_demo = api_service.fetch_intraday_data(selected_symbol, selected_interval)
+            df = api_service.parse_time_series(response, selected_symbol, selected_interval)
             
             if df.empty:
                 st.error("No data available for the selected stock and interval.")
                 st.stop()
             
-            # Cache the data
+            # Cache the data and demo flag
             st.session_state.cached_data[cache_key] = df
+            st.session_state[f"{cache_key}_is_demo"] = is_demo
     else:
         df = st.session_state.cached_data[cache_key]
+        is_demo = st.session_state.get(f"{cache_key}_is_demo", False)
+    
+    # Show demo data warning if applicable
+    if is_demo:
+        st.warning(f"""
+        ⚠️ **Using Demo Data for {selected_symbol}**
+        
+        The Alpha Vantage API is currently unavailable (rate limit, invalid key, or connection issue).
+        Displaying simulated data for demonstration purposes.
+        
+        **This is not real market data!**
+        """)
+    
     
     # Calculate metrics
     metrics = data_processor.calculate_metrics(df)

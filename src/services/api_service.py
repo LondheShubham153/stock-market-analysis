@@ -2,13 +2,15 @@
 
 import requests
 import pandas as pd
-from typing import Optional, Dict
+from typing import Optional, Dict, Tuple
 from src import config
+from src.services import demo_data
 
 
-def fetch_intraday_data(symbol: str, interval: str, api_key: str = config.ALPHA_VANTAGE_API_KEY) -> Optional[Dict]:
+def fetch_intraday_data(symbol: str, interval: str, api_key: str = config.ALPHA_VANTAGE_API_KEY) -> Tuple[Optional[Dict], bool]:
     """
     Fetch intraday time series data from Alpha Vantage API.
+    Falls back to demo data if API is unavailable.
     
     Args:
         symbol: Stock symbol (e.g., 'IBM', 'AAPL')
@@ -16,7 +18,7 @@ def fetch_intraday_data(symbol: str, interval: str, api_key: str = config.ALPHA_
         api_key: Alpha Vantage API key
         
     Returns:
-        JSON response dict or None if error occurs
+        Tuple of (JSON response dict or None, is_demo_data boolean)
     """
     try:
         params = {
@@ -36,36 +38,46 @@ def fetch_intraday_data(symbol: str, interval: str, api_key: str = config.ALPHA_
         if "Error Message" in data:
             raise ValueError(f"Invalid symbol: {symbol}")
         if "Note" in data:
-            raise ValueError("API rate limit reached. Please wait and try again.")
+            raise ValueError("API rate limit reached. Using demo data instead.")
             
-        return data
+        return data, False
         
     except requests.exceptions.HTTPError as e:
         if e.response.status_code == 401:
-            raise ValueError("Invalid API key. Please check your configuration.")
+            print(f"Invalid API key. Using demo data for {symbol}.")
         elif e.response.status_code == 429:
-            raise ValueError("API rate limit exceeded. Please wait before making more requests.")
+            print(f"API rate limit exceeded. Using demo data for {symbol}.")
         else:
-            raise ValueError(f"HTTP error occurred: {e}")
+            print(f"HTTP error occurred: {e}. Using demo data for {symbol}.")
+        return None, True
     except requests.exceptions.ConnectionError:
-        raise ValueError("Network connection error. Please check your internet connection.")
+        print(f"Network connection error. Using demo data for {symbol}.")
+        return None, True
     except requests.exceptions.Timeout:
-        raise ValueError("Request timed out. Please try again.")
+        print(f"Request timed out. Using demo data for {symbol}.")
+        return None, True
     except Exception as e:
-        raise ValueError(f"An error occurred: {str(e)}")
+        print(f"Error occurred: {str(e)}. Using demo data for {symbol}.")
+        return None, True
 
 
-def parse_time_series(response: Dict) -> pd.DataFrame:
+def parse_time_series(response: Optional[Dict], symbol: str = None, interval: str = None) -> pd.DataFrame:
     """
     Convert API response to pandas DataFrame.
+    Falls back to demo data if response is None or invalid.
     
     Args:
-        response: JSON response from Alpha Vantage API
+        response: JSON response from Alpha Vantage API (or None for demo data)
+        symbol: Stock symbol (used for demo data generation)
+        interval: Time interval (used for demo data generation)
         
     Returns:
         DataFrame with columns: timestamp, open, high, low, close, volume
     """
     if not response:
+        # Generate demo data if no response
+        if symbol and interval:
+            return demo_data.generate_demo_stock_data(symbol, interval)
         return pd.DataFrame()
     
     # Find the time series key (varies by interval)
@@ -76,6 +88,9 @@ def parse_time_series(response: Dict) -> pd.DataFrame:
             break
     
     if not time_series_key:
+        # Fall back to demo data if no valid time series found
+        if symbol and interval:
+            return demo_data.generate_demo_stock_data(symbol, interval)
         return pd.DataFrame()
     
     time_series = response[time_series_key]
