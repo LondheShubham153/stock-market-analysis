@@ -219,3 +219,4 @@ This application uses the Alpha Vantage API for stock market data.
 - API Documentation: https://www.alphavantage.co/documentation/
 - Free API key: https://www.alphavantage.co/support/#api-key
 - Rate limits: 5 requests/minute (free tier)
+
