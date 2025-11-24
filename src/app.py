@@ -10,7 +10,7 @@ from src.managers import watchlist_manager, refresh_manager
 
 # Page configuration
 st.set_page_config(
-    page_title="Stock Market Analytics Dashboard",
+    page_title="Stock Market Analytics Dashboard (JOSH Batch 10)",
     page_icon="📈",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -39,7 +39,7 @@ if 'disclaimer_accepted' not in st.session_state:
 # Show disclaimer banner if not accepted
 if not st.session_state.disclaimer_accepted:
     st.error("""
-    ### ⚠️ IMPORTANT DISCLAIMER - Please Read Before Continuing
+    ### ⚠️ IMPORTANT DISCLAIMER - For JOSH Batch 10 Please Read Before Continuing
     
     **This application is for EDUCATIONAL and DEMONSTRATION purposes only.**
     
@@ -66,7 +66,7 @@ if not st.session_state.disclaimer_accepted:
     st.stop()  # Stop execution until disclaimer is accepted
 
 # Header
-st.title("📈 Stock Market Analytics Dashboard")
+st.title("📈 Stock Market Analytics Dashboard (JOSH Batch 10)")
 st.markdown("Real-time stock market data visualization and analysis")
 st.caption("⚠️ Educational demo only - Not for real trading")
 
